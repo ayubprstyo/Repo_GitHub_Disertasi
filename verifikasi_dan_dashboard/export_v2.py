@@ -13,7 +13,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--stops', required=True); ap.add_argument('--sequences', required=True)
 ap.add_argument('--s5-sequences', help='urutan rute S5 pasca-perbaikan (51 tanggal held-out)'); ap.add_argument('--blocks'); ap.add_argument('--out', default='routes_v2.json'); ap.add_argument('--blocks-out', default='s5_blocks.json')
 ap.add_argument('--anonymize', action='store_true')
-ap.add_argument('--depot-lon', type=float, default=106.816403); ap.add_argument('--depot-lat', type=float, default=-6.553882)
+ap.add_argument('--depot-lon', type=float, required=True, help='longitude depot (tidak dipublikasikan)'); ap.add_argument('--depot-lat', type=float, required=True, help='latitude depot (tidak dipublikasikan)')
 a = ap.parse_args()
 st = pd.read_csv(a.stops); sq = pd.read_csv(a.sequences); sq = sq[sq.method == 'NR']
 dates = sorted(sq.delivery_date.unique()); ca = {}
