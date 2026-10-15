@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DT-RoMon - Dashboard Rute S0 sampai S5</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<style>
+:root{--bg:#f1f4f9;--fg:#18212f;--card:#fff;--bd:#e1e6ef;--mut:#68758c;--acc:#2458c4;--soft:#f6f8fc;--top:#0e1a30;--ok:#18864b;--bad:#c13a2c;--sh:0 1px 2px rgba(16,30,54,.06),0 4px 14px rgba(16,30,54,.05)}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1118;--fg:#e7ebf2;--card:#171c26;--bd:#272e3c;--mut:#97a2b6;--acc:#76a8ff;--soft:#1f2531;--top:#080e19;--sh:none}}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;font:13px/1.45 Inter,"Segoe UI",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--fg);display:flex;flex-direction:column}
+.top{background:var(--top);color:#fff;display:flex;align-items:center;gap:20px;padding:0 20px;height:54px;flex:none}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;letter-spacing:.3px}.logo i{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#3b82f6,#22d3ee);display:inline-block}
+.logo small{display:block;font-weight:400;font-size:10.5px;color:#8ea0bf;letter-spacing:0;margin-top:-2px}
+nav{display:flex;gap:2px;height:100%}nav button{background:none;border:0;color:#9fb0cc;padding:0 16px;font:600 13px inherit;cursor:pointer;border-bottom:3px solid transparent;height:100%}
+nav button:hover{color:#fff}nav button.on{color:#fff;border-color:#4f8cff}
+.sp{flex:1}.chip{font-size:11px;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.1);color:#cfdaf0;white-space:nowrap}
+.bar{background:var(--card);border-bottom:1px solid var(--bd);padding:8px 20px;display:flex;gap:16px;align-items:end;flex-wrap:wrap;flex:none}
+.bar label{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);margin:0 0 3px;font-weight:600}
+select,input[type=file]{padding:6px 8px;background:var(--soft);color:var(--fg);border:1px solid var(--bd);border-radius:7px;font:inherit;min-width:110px}
+.seg{display:inline-flex;background:var(--soft);border:1px solid var(--bd);border-radius:8px;padding:2px}.seg button{border:0;background:none;color:var(--mut);padding:5px 14px;border-radius:6px;font:600 12px inherit;cursor:pointer}
+.seg button.on{background:var(--card);color:var(--fg);box-shadow:var(--sh)}
+.seg button .d{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+#welcome{margin:40px auto;max-width:640px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:28px;box-shadow:var(--sh)}
+#welcome h2{margin:0 0 6px;font-size:18px}#welcome p{color:var(--mut);margin:0 0 14px}#welcome label{display:block;margin:10px 0 4px;color:var(--mut);font-size:12px}#welcome input{width:100%}
+.view{flex:1;min-height:0;overflow:auto;padding:16px 20px}
+.grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:1100px){.g4{grid-template-columns:1fr 1fr}.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;box-shadow:var(--sh)}
+.card h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.card h3 span{text-transform:none;letter-spacing:0;font-weight:500;font-size:11.5px}
+.kpi b{display:block;font-size:26px;letter-spacing:-.5px}.kpi .l{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);font-weight:700}
+.kpi .dl{font-size:12px;margin-top:2px;color:var(--mut)}.up{color:var(--bad)}.dn{color:var(--ok)}
+table{border-collapse:collapse;width:100%;font-size:12px}th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--bd)}th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+th:first-child,td:first-child{text-align:left}tr.hl td{background:var(--soft)}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11.5px;color:var(--mut);margin-top:8px}.leg i{display:inline-block;vertical-align:middle;margin-right:5px;width:10px;height:10px;border-radius:3px}
+.note{font-size:11.5px;color:var(--mut);margin-top:8px}.warn{background:#fff6dd;color:#5a4300;border:1px solid #ecd68e;border-radius:10px;padding:8px 12px;font-size:12px;margin-bottom:14px}
+@media(prefers-color-scheme:dark){.warn{background:#3a2f0e;color:#f0d98a;border-color:#6b5a1d}}
+.tag{font-size:10.5px;padding:1px 8px;border-radius:999px;white-space:nowrap;font-weight:600}.t1{background:#dfeaff;color:#1d4fa0}.t2{background:#eef0f4;color:#556}.t3{background:#ffe9d6;color:#a4510b}.t4{background:#fde0dd;color:#a3271b}.t5{background:#dff3e7;color:#1b6b3b}
+@media(prefers-color-scheme:dark){.t1{background:#1e3560;color:#b9d2ff}.t2{background:#2a303d;color:#aab}.t3{background:#4a2f17;color:#ffd0a6}.t4{background:#4d201c;color:#ffb4ab}.t5{background:#17402a;color:#9fe0b8}}
+.split{display:grid;grid-template-columns:440px 1fr;gap:14px;height:100%}@media(max-width:1100px){.split{grid-template-columns:1fr;height:auto}#map{height:480px}}
+.col{display:flex;flex-direction:column;gap:14px;min-height:0;overflow:auto}
+.mapwrap{display:flex;flex-direction:column;gap:14px;min-height:0}#map{flex:1;min-height:380px;border-radius:12px;border:1px solid var(--bd);box-shadow:var(--sh)}
+.seq tr{cursor:pointer}.seq tr:hover td{background:var(--soft)}.vh{display:flex;align-items:center;gap:8px;font-weight:700;margin:12px 0 4px}.vh i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.pin{width:24px;height:24px;border-radius:50%;color:#fff;font:700 11px/20px system-ui;text-align:center;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}.pin.h{opacity:.55}.pin.m{border-color:#000;box-shadow:0 0 0 2px #fff,0 1px 5px rgba(0,0,0,.6)}.pin.late{box-shadow:0 0 0 3px #ff3b30,0 1px 5px rgba(0,0,0,.5)}
+.depot{width:28px;height:28px;border-radius:7px;background:#ffd400;border:2px solid #000;font:800 12px/24px system-ui;text-align:center;color:#000}
+.tl{position:relative;margin:4px 0 0}.tr{display:flex;align-items:center;gap:10px;margin:7px 0}.tr .n{width:38px;font-weight:700;font-size:12px}.tr .t{position:relative;flex:1;height:22px;background:var(--soft);border-radius:6px}
+.tr .t b{position:absolute;top:3px;width:16px;height:16px;border-radius:50%;margin-left:-8px;font:700 9px/16px system-ui;color:#fff;text-align:center;cursor:pointer}
+.cur{position:absolute;top:-2px;bottom:-2px;width:2px;background:#0a7;z-index:3}.sim{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:2px 0 10px}.sim button{padding:6px 12px;border:1px solid var(--bd);background:var(--soft);color:var(--fg);border-radius:7px;cursor:pointer;font-weight:600}.sim input[type=range]{flex:1;min-width:180px}.sim .clk{font:700 15px system-ui;min-width:52px}.simk{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;margin:0 0 8px}.simk b{font-variant-numeric:tabular-nums}.veh{width:20px;height:20px;border-radius:5px;border:2px solid #fff;box-shadow:0 1px 4px #0006;color:#fff;font:700 10px/16px system-ui;text-align:center}.wr{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12px}.wr span{width:34px;font-weight:700}.wb{flex:1;height:10px;background:var(--soft);border-radius:5px;overflow:hidden}.wb i{display:block;height:100%}.wr b{width:26px;text-align:right}.seg button.on{background:var(--card);color:var(--fg);box-shadow:var(--sh)}.bnd{position:absolute;top:0;bottom:0;border-left:2px solid #222;opacity:.55}.tlb{margin:0 0 12px}.tlh{display:flex;gap:10px;align-items:baseline;margin-bottom:2px;font-size:12.5px}.tlh span{color:var(--mut);font-size:11.5px}.axis{display:flex;margin-left:48px;font-size:10.5px;color:var(--mut);justify-content:space-between}.tw{position:absolute;top:0;bottom:0;border-left:2px dashed #c13a2c;opacity:.6}
+.chart text{font:11px system-ui;fill:var(--mut)}.chart .v{fill:var(--fg);font-weight:600}.chart line{stroke:var(--bd)}
+.leaflet-container{font:inherit}
+#s5maps{display:flex;gap:14px;flex:1;min-height:380px;position:relative}#s5maps #map,#s5maps #map2{flex:1;min-height:380px}#map2{border-radius:12px;border:1px solid var(--bd);box-shadow:var(--sh);display:none}
+.mlab{position:absolute;top:10px;z-index:900;background:var(--card);color:var(--fg);padding:4px 11px;border-radius:999px;font:700 11.5px system-ui;box-shadow:var(--sh);border:1px solid var(--bd);display:none}#ml1{left:60px}#ml2{right:12px}
+.dlt{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.dlt div{background:var(--soft);border-radius:8px;padding:8px 6px;text-align:center}.dlt b{display:block;font-size:18px}.dlt span{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+.s5l .l{display:inline-block;margin-right:12px;color:var(--mut);font-size:11.5px}.s5l i{display:inline-block;width:22px;border-top:3px solid #555;vertical-align:middle;margin-right:5px}
+</style></head><body>
+<div class="top"><div class="logo"><i></i><div>DT-RoMon<small>Digital Twin Route Monitor</small></div></div>
+<nav id="nav"><button data-t="sum" class="on">Ringkasan S0-S4</button><button data-t="route">Peta dan urutan rute</button><button data-t="date">Per tanggal</button><button data-t="s5">Koreksi S5</button></nav>
+<div class="sp"></div><span class="chip">Tingkat Digital Model</span><span class="chip">Bukan routing real-time</span></div>
+<div class="bar" id="bar" hidden>
+<div id="bday"><label>Hari pengiriman</label><select id="day"></select></div>
+<div id="bsc"><label>Skenario</label><div class="seg" id="sc"></div></div>
+<div id="bmode"><label>Garis peta</label><select id="mode"><option value="road">Ikuti jalan (OSRM)</option><option value="line">Garis lurus</option></select></div>
+<div id="bs5" hidden style="display:flex;gap:12px;align-items:end"><div><label>Pemicu</label><select id="tf"></select></div><div><label>Gangguan</label><select id="sh"></select></div><div><label>Seed</label><select id="sd"></select></div><div><label>Metode S5</label><select id="m"><option>SA</option><option>RG</option><option>FR</option></select></div>
+<div><label>Tampilan</label><select id="l5"><option value="1">Dengan rute koreksi S5</option><option value="0">Hanya rute NR</option></select></div><div><label>Peta</label><select id="view5"><option value="1">Satu peta</option><option value="2">Berdampingan: NR vs S5</option></select></div></div>
+<div class="sp"></div><button id="reload" style="padding:7px 12px;border:1px solid var(--bd);background:var(--soft);color:var(--fg);border-radius:7px;cursor:pointer">Ganti data</button></div>
+<div class="warn" id="anonbar" hidden style="margin:8px 16px 0">Data anonim: kode pelanggan diganti dan koordinat diacak sekitar 0,4 sampai 1 km. Peta bersifat ilustratif; jarak pada peta bukan jarak sebenarnya. Angka waktu, jarak, dan lateness berasal dari data asli.</div>
+<div id="welcome"><h2>Muat data</h2><p>Pilih berkas hasil ekspor. Data bersifat anonim: kode pelanggan diganti dan koordinat diacak sehingga peta hanya perkiraan.</p>
+<label>Berkas rute (routes_v3_anonim.json)</label><input type="file" id="f1" accept=".json"><label>Berkas hasil S5 (s5_blocks.json)</label><input type="file" id="f2" accept=".json"></div>
+<div class="view" id="v-sum" hidden></div>
+<div class="view" id="v-date" hidden></div>
+<div class="view" id="v-route" hidden style="padding-bottom:12px"><div class="split"><div class="col" id="rcol"></div><div class="mapwrap"><div id="map"></div><div class="card" id="tlc"></div></div></div></div>
+<div class="view" id="v-s5" hidden style="padding-bottom:12px"><div class="split"><div class="col" id="scol"></div><div class="mapwrap" id="s5map"><div id="s5maps"><span class="mlab" id="ml1"></span><span class="mlab" id="ml2"></span><div id="map2"></div></div><div class="card" id="tlc5"></div></div></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+const $=id=>document.getElementById(id);let D=null,B=null,G={},map=null,grp=null,map2=null,grp2=null,tok=0,tab='sum',SC='S4';
+const SCN=['S0','S1','S2','S3','S4'],SCOL={S0:'#8b95a7',S1:'#4f7cd9',S2:'#e0a030',S3:'#2fa58a',S4:'#d6471f'},
+SNAME={S0:'VRPTW-1D baseline',S1:'MCVRPTW-TD p50',S2:'Fixed p85',S3:'Fixed p95',S4:'QRG-ALNS-ILS'};
+const PAL=['#1f5fbf','#d6471f','#1f9d5c','#8a4fd1','#c08a00','#0f8fa3','#b0357d'],M=['NR','FR','RG','SA'];
+const fmt=(x,d=2)=>Number(x).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d});
+const hm=m=>{m=Math.round(m);return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')};
+const fill=(id,v)=>$(id).innerHTML=v.map(x=>`<option>${x}</option>`).join('');
+const rd=(el,cb)=>el.onchange=e=>{const r=new FileReader();r.onload=()=>cb(JSON.parse(r.result));r.readAsText(e.target.files[0])};
+rd($('f1'),j=>{D=j;boot()});rd($('f2'),j=>{B=j;prep();render()});
+fetch('routes_v3_anonim.json').then(r=>r.ok?r.json():null).then(j=>{if(j){D=j;boot()}}).catch(()=>{});
+fetch('s5_blocks.json').then(r=>r.ok?r.json():null).then(j=>{if(j){B=j;prep();render()}}).catch(()=>{});
+$('reload').onclick=()=>{['v-sum','v-date','v-route','v-s5','bar','anonbar'].forEach(i=>$(i).hidden=true);$('welcome').hidden=false};
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));render()});
+function prep(){if(!B)return;const ci={};B.columns.forEach((c,i)=>ci[c]=i);G={ci,inst:{}};for(const r of B.rows){const k=r[ci.delivery_date];(G.inst[k]??={});(G.inst[k][r[ci.method]]??=[]).push(r)}}
+function boot(){$('welcome').hidden=true;$('bar').hidden=false;
+ $('day').innerHTML=Object.keys(D.days).map(k=>`<option value="${k}">${k.replace('INSTANCE_','Hari ')} (${D.days[k].date})</option>`).join('');
+ const f=Object.keys(D.days[Object.keys(D.days)[0]].frozen).map(k=>k.split('|'));const u=i=>[...new Set(f.map(x=>x[i]))];fill('tf',u(0));fill('sh',u(1));fill('sd',u(2));$('tf').value='0.25';
+ $('sc').innerHTML=SCN.map(s=>`<button data-s="${s}" class="${s===SC?'on':''}"><span class="d" style="background:${SCOL[s]}"></span>${s}</button>`).join('');
+ document.querySelectorAll('#sc button').forEach(b=>b.onclick=()=>{SC=b.dataset.s;document.querySelectorAll('#sc button').forEach(x=>x.classList.toggle('on',x===b));render()});
+ ['day','tf','sh','sd','m','l5','mode','view5'].forEach(i=>$(i).onchange=render);
+ if(!map){map=L.map('map');grp=L.layerGroup().addTo(map);L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri | Routing &copy; OSRM',maxZoom:19}).addTo(map);map.setView([-6.58,106.82],11);
+  map2=L.map('map2');grp2=L.layerGroup().addTo(map2);L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri | Routing &copy; OSRM',maxZoom:19}).addTo(map2);map2.setView([-6.58,106.82],11);
+  let lk=false;const sy=(a,b)=>a.on('move',()=>{if(lk||$('view5').value!=='2')return;lk=true;b.setView(a.getCenter(),a.getZoom(),{animate:false});lk=false});sy(map,map2);sy(map2,map)}
+ render()}
+function render(){if(!D)return;['v-sum','v-date','v-route','v-s5'].forEach(i=>$(i).hidden=true);$('v-'+tab).hidden=false;$('anonbar').hidden=!(D.meta.anonymized&&(tab==='route'||tab==='s5'));
+ $('bday').hidden=tab==='sum'||tab==='date';$('bsc').hidden=tab!=='route';$('bmode').hidden=tab==='sum'||tab==='date';$('bs5').hidden=tab!=='s5';$('bs5').style.display=tab==='s5'?'flex':'none';
+ if(tab==='sum')viewSum();else if(tab==='date')viewDate();else{const dst=tab==='route'?$('rcol').parentElement.querySelector('.mapwrap'):$('s5map');
+  const mw=tab==='route'?document.querySelector('#v-route .mapwrap'):$('s5maps');mw.prepend($('map'));$('map').style.flex='1';
+  if(tab==='route')viewRoute();else viewS5();setTimeout(()=>{map.invalidateSize();if(map2)map2.invalidateSize()},50)}}
+/* ---------- charts ---------- */
+function bars(el,cats,series,o={}){const W=560,H=230,l=52,r=8,t=14,b=30,raw=Math.max(...series.flatMap(s=>s.v))||1,p=Math.pow(10,Math.floor(Math.log10(raw))),mx=o.max||([1,1.2,1.5,2,2.5,3,4,5,6,8,10].map(m=>m*p).find(v=>v>=raw*1.04)||p*10);
+ const gw=(W-l-r)/cats.length,bw=Math.min(26,(gw-10)/series.length);let s=`<svg viewBox="0 0 ${W} ${H}" class="chart" width="100%">`;
+ for(let i=0;i<=4;i++){const y=t+(H-t-b)*(1-i/4);s+=`<line x1="${l}" x2="${W-r}" y1="${y}" y2="${y}"/><text x="${l-6}" y="${y+4}" text-anchor="end">${fmt(mx*i/4,o.d??0)}</text>`}
+ cats.forEach((c,ci)=>{const x0=l+gw*ci+(gw-bw*series.length)/2;series.forEach((se,si)=>{const v=se.v[ci],h=(H-t-b)*v/mx,x=x0+bw*si,y=H-b-h;
+  s+=`<rect x="${x}" y="${y}" width="${bw-2}" height="${Math.max(h,0)}" rx="3" fill="${se.c}"><title>${se.n}: ${fmt(v,o.d??0)}</title></rect>`;if(bw>=18)s+=`<text class="v" x="${x+(bw-2)/2}" y="${y-4}" text-anchor="middle" style="font-size:9.5px">${fmt(v,o.ld??o.d??0)}</text>`});
+  s+=`<text x="${l+gw*ci+gw/2}" y="${H-10}" text-anchor="middle">${c}</text>`});
+ el.innerHTML=s+'</svg>'}
+const legend=()=>'<div class="leg">'+SCN.map(s=>`<span><i style="background:${SCOL[s]}"></i>${s} ${SNAME[s]}</span>`).join('')+'</div>';
+/* ---------- ringkasan ---------- */
+function viewSum(){const A=D.meta.agg,U=D.meta.audit,own=A.own;const el=$('v-sum');
+ const best=(k,ev='own')=>SCN.reduce((a,b)=>A[ev][b][k]<A[ev][a][k]?b:a);
+ const kp=SCN.map(s=>`<div class="card kpi"><div class="l" style="color:${SCOL[s]}">${s} ${SNAME[s]}</div><b>${fmt(own[s].late,1)}</b><div class="dl">menit lateness (evaluasi sendiri)</div><div class="dl">OTD ${fmt(own[s].otd)}% &middot; ${own[s].veh} kendaraan-hari</div></div>`).join('');
+ const row=(l,f)=>`<tr><td>${l}</td>${SCN.map(s=>`<td>${f(s)}</td>`).join('')}</tr>`;
+ el.innerHTML=`<div class="warn">Hasil agregat 63 tanggal, tiga seed per skenario, 80 iterasi, konfigurasi identik. Tidak ada skenario yang unggul pada semua metrik. Evaluasi sendiri memakai matriks tiap skenario dan tidak setara antar skenario; perbandingan setara memakai tolok ukur bersama p50, p85, dan p95.</div>
+ <div class="grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:14px">${kp}</div>
+ <div class="grid" style="grid-template-columns:1.25fr 1fr;margin-bottom:14px"><div class="card" id="to1"></div><div class="card" id="to2"></div></div>
+ <div class="card" id="to4" style="margin-bottom:14px"></div>
+ <div class="card" id="to3" style="margin-bottom:14px"></div>
+ <div class="grid g2"><div class="card"><h3>Total lateness pada tolok ukur bersama <span>menit, makin rendah makin baik</span></h3><div id="c1"></div>${legend()}</div>
+ <div class="card"><h3>On-time delivery pada tolok ukur bersama <span>persen</span></h3><div id="c2"></div>${legend()}</div></div>
+ <div class="grid g3" style="margin-top:14px"><div class="card"><h3>Kendaraan-hari <span>63 tanggal</span></h3><div id="c3"></div></div>
+ <div class="card"><h3>Total jarak <span>km</span></h3><div id="c4"></div></div>
+ <div class="card"><h3>Posisi terbaik per metrik</h3><table>
+ <tr><td>Jarak terendah</td><td><span class="tag t1">${best('dist')}</span></td></tr>
+ <tr><td>Kendaraan-hari terendah</td><td><span class="tag t1">${best('veh')}</span> <span class="tag t3">S0 melanggar volume</span></td></tr>
+ <tr><td>Lateness p50 terendah</td><td><span class="tag t5">${best('late','p50')}</span></td></tr>
+ <tr><td>Lateness p85 terendah</td><td><span class="tag t5">${best('late','p85')}</span></td></tr>
+ <tr><td>Lateness p95 terendah</td><td><span class="tag t5">${best('late','p95')}</span></td></tr></table>
+ <div class="note">Sumber: hasil rerun S0 sampai S4. Label bersifat deskriptif; uji berpasangan per tanggal dan koreksi Holm ada pada Bab IV.</div></div></div>
+ <div class="card" style="margin-top:14px"><h3>Tabel metrik dan audit kapasitas</h3><table><tr><th>Metrik</th>${SCN.map(s=>`<th>${s}</th>`).join('')}</tr>
+ ${row('Jarak (km)',s=>fmt(own[s].dist))}${row('Waktu tempuh sendiri (menit)',s=>fmt(own[s].trav,0))}${row('Lateness sendiri (menit)',s=>fmt(own[s].late))}${row('Lateness p50 / p85 / p95',s=>[A.p50,A.p85,A.p95].map(x=>fmt(x[s].late,0)).join(' / '))}
+ ${row('OTD sendiri (%)',s=>fmt(own[s].otd))}${row('Kendaraan-hari',s=>own[s].veh)}${row('Rute melanggar volume',s=>U[s].vviol?`<b class="up">${U[s].vviol}</b>`:'0')}${row('Utilisasi volume maksimum (%)',s=>fmt(U[s].maxvu,1))}${row('Rata-rata utilisasi berat / volume (%)',s=>fmt(U[s].wu,1)+' / '+fmt(U[s].vu,1))}</table></div>`;
+ const ys=['p50','p85','p95'],ser=(k,f=x=>x)=>SCN.map(s=>({n:s,c:SCOL[s],v:ys.map(y=>f(A[y][s][k]))}));
+ tradeoff();stressCard();utilCard();bars($('c1'),['p50','p85','p95'],ser('late'));bars($('c2'),['p50','p85','p95'],ser('otd'),{d:0,ld:1,max:100});
+ bars($('c3'),SCN,[{n:'Kendaraan-hari',c:'#4f7cd9',v:SCN.map(s=>own[s].veh)}]);bars($('c4'),SCN,[{n:'Jarak',c:'#2fa58a',v:SCN.map(s=>own[s].dist)}])}
+/* ---------- peta ---------- */
+const cache=new Map();
+async function snap(pts){const key=pts.map(p=>p[1].toFixed(5)+','+p[0].toFixed(5)).join(';');if(cache.has(key))return cache.get(key);
+ const p=fetch('https://router.project-osrm.org/route/v1/driving/'+key+'?overview=full&geometries=geojson').then(r=>r.ok?r.json():null).then(j=>j&&j.routes&&j.routes[0]?j.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]):null).catch(()=>null);cache.set(key,p);return p}
+function line(pts,st,t){const pl=L.polyline(pts,st).addTo(grp);if($('mode').value==='road'&&pts.length>1)snap(pts).then(g=>{if(g&&t===tok)pl.setLatLngs(g)});return pl}
+const pin=(n,c,cls)=>L.divIcon({className:'',html:`<div class="pin ${cls}" style="background:${c}">${n}</div>`,iconSize:[24,24],iconAnchor:[12,12]});
+const depIcon=L.divIcon({className:'',html:'<div class="depot">D</div>',iconSize:[28,28],iconAnchor:[14,14]});
+function viewRoute(){const t=++tok;grp.clearLayers();const d=D.days[$('day').value],N=d.nodes,dep=[D.meta.depot[1],D.meta.depot[0]],ll=n=>[N[n].lat,N[n].lon],x=d.scen[SC],mk={};let all=[],seq='';
+ Object.keys(x.routes).sort().forEach((v,vi)=>{const c=PAL[vi%PAL.length],a=x.routes[v];line([dep,...a.map(r=>ll(r[0])),dep],{color:c,weight:4,opacity:.9},t);let tr='';
+  a.forEach((r,i)=>{const n=r[0];all.push(ll(n));const lt=r[2]>0.05;
+   const m=L.marker(ll(n),{icon:pin(i+1,c,lt?'late':'')}).bindTooltip(`<b>${i+1}. ${N[n].id}</b><br>${v}, tiba ${hm(r[1])}${lt?`, terlambat ${fmt(r[2],1)} menit`:', tepat waktu'}<br>kuantil ${r[3]}, ${N[n].w} kg`).addTo(grp);mk[v+'|'+i]=m;
+   tr+=`<tr data-k="${v}|${i}"><td>${i+1}</td><td style="text-align:left">${N[n].id}</td><td>${hm(r[1])}</td><td>${lt?`<span class="tag t4">${fmt(r[2],1)}</span>`:'<span class="tag t5">0</span>'}</td><td>${r[3]}</td><td>${fmt(N[n].w,1)}</td></tr>`});
+  seq+=`<div class="vh"><i style="background:${c}"></i>${v}<span style="color:var(--mut);font-weight:400">${a.length} stop</span></div><table class="seq"><tr><th>#</th><th style="text-align:left">Stop</th><th>Tiba</th><th>Telat (mnt)</th><th>Kuantil</th><th>kg</th></tr>${tr}</table>`});
+ L.marker(dep,{icon:depIcon,zIndexOffset:900}).bindTooltip('Depo').addTo(grp);map.fitBounds(L.latLngBounds([dep,...all]).pad(.12));
+ const m=x.m,ys=m.y;const cmp=SCN.map(s=>{const q=d.scen[s].m;return `<tr class="${s===SC?'hl':''}"><td><span style="color:${SCOL[s]}">&#9632;</span> ${s}</td><td>${fmt(q.dist,1)}</td><td>${q.veh}</td><td>${fmt(q.late,1)}</td><td>${fmt(q.y.p85[0],1)}</td><td>${fmt(q.y.p95[0],1)}</td><td>${q.vviol?`<b class="up">${q.vviol}</b>`:'0'}</td></tr>`}).join('');
+ $('rcol').innerHTML=`<div class="grid g4" style="grid-template-columns:1fr 1fr 1fr 1fr"><div class="card kpi"><div class="l">Stop</div><b>${N.length}</b></div><div class="card kpi"><div class="l">Kendaraan</div><b>${m.veh}</b></div><div class="card kpi"><div class="l">Jarak</div><b>${fmt(m.dist,0)}</b><div class="dl">km</div></div><div class="card kpi"><div class="l">Lateness</div><b>${fmt(m.late,0)}</b><div class="dl">menit</div></div></div>
+ <div class="card"><h3>Perbandingan skenario pada hari ini <span>${d.date}</span></h3><table><tr><th>Skenario</th><th>km</th><th>Kend.</th><th>Telat sendiri</th><th>Telat p85</th><th>Telat p95</th><th>Melanggar vol.</th></tr>${cmp}</table>
+ <div class="note">Rute dipilih dari seed ${m.seed} (objektif terendah dari tiga seed). Cincin merah pada peta menandai stop terlambat. Telat p85 dan p95 dihitung ulang pada matriks tolok ukur bersama.</div></div>
+ <div class="card"><h3>Urutan kunjungan <span>${SC} ${SNAME[SC]}</span></h3><div class="note" style="margin:0 0 4px">Angka pada peta adalah urutan pengiriman. Klik baris untuk menuju stop.</div>${seq}</div>`;
+ document.querySelectorAll('#rcol tr[data-k]').forEach(r=>r.onclick=()=>{const m=mk[r.dataset.k];map.flyTo(m.getLatLng(),Math.max(map.getZoom(),15));m.openTooltip()});
+ /* timeline */
+ const all2=Object.values(x.routes).flat(),t0=Math.min(480,...all2.map(r=>r[1]))-10,t1=Math.max(1080,...all2.map(r=>r[1]))+20,pc=v=>((v-t0)/(t1-t0)*100);
+ let tl='';Object.keys(x.routes).sort().forEach((v,vi)=>{tl+=`<div class="tr"><div class="n" style="color:${PAL[vi%PAL.length]}">${v}</div><div class="t">${x.routes[v].map((r,i)=>`<b style="left:${pc(r[1])}%;background:${r[2]>0.05?'#c13a2c':PAL[vi%PAL.length]}" title="${i+1}. tiba ${hm(r[1])}${r[2]>0.05?', terlambat '+fmt(r[2],1)+' menit':''}">${i+1}</b>`).join('')}<div class="tw" style="left:${pc(1080)}%" title="Target selesai 18:00"></div></div></div>`});
+ const ticks=[];for(let h=Math.ceil(t0/60);h*60<=t1;h++)ticks.push(`<span>${String(h).padStart(2,'0')}:00</span>`);
+ $('tlc').innerHTML=`<h3>Linimasa pengiriman <span>${SC}, jam tiba tiap stop; garis putus-putus = target selesai 18:00</span></h3><div class="tl">${tl}</div><div class="axis">${ticks.join('')}</div>`}
+/* ---------- trade-off ---------- */
+let TO={y:'p95',x:'veh'};
+function tradeoff(){const A=D.meta.agg,U=D.meta.audit,y=TO.y,xs=TO.x,fx=s=>xs==='veh'?A.own[s].veh:A.own[s].dist,fy=s=>A[y][s].late;
+ const feas=SCN.filter(s=>!U[s].vviol),dom=(a,b)=>fx(b)<=fx(a)&&fy(b)<=fy(a)&&(fx(b)<fx(a)||fy(b)<fy(a)),par=feas.filter(a=>!feas.some(b=>b!==a&&dom(a,b))).sort((a,b)=>fx(a)-fx(b));
+ const W=780,H=380,l=70,r=26,t=16,bt=48,xv=SCN.map(fx),x0=Math.min(...xv),x1=Math.max(...xv),pad=(x1-x0)*.12,LY=v=>Math.log10(1+v),ymax=LY(Math.max(...SCN.map(fy)))*1.1,X=v=>l+(v-(x0-pad))/((x1+pad)-(x0-pad))*(W-l-r),Y=v=>t+(1-LY(v)/ymax)*(H-t-bt);
+ let g='';[0,10,100,1000,10000,100000].filter(v=>LY(v)<=ymax).forEach(v=>{g+=`<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--bd)"/><text x="${l-6}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="var(--mut)">${fmt(v,0)}</text>`});
+ const tk=xs==='veh'?[...new Set(xv)]:[x0,x1];tk.forEach(v=>g+=`<text x="${X(v)}" y="${H-bt+16}" text-anchor="middle" font-size="10" fill="var(--mut)">${fmt(v,xs==='veh'?0:0)}</text>`);
+ g+=`<text x="${(l+W-r)/2}" y="${H-6}" text-anchor="middle" font-size="12" fill="var(--mut)">${xs==='veh'?'Kendaraan-hari':'Total jarak (km)'} &rarr; makin kecil makin baik</text><text transform="translate(13 ${(t+H-bt)/2}) rotate(-90)" text-anchor="middle" font-size="11" fill="var(--mut)">Lateness ${y} (menit, skala log) &darr; makin kecil makin baik</text>`;
+ const fr=par.length>1?`<polyline fill="none" stroke="var(--mut)" stroke-dasharray="5 4" stroke-width="1.5" points="${par.map(s=>X(fx(s))+','+Y(fy(s))).join(' ')}"/>`:'';
+ const pts=SCN.map(s=>{const bad=U[s].vviol,c=SCOL[s];return`<g><circle cx="${X(fx(s))}" cy="${Y(fy(s))}" r="${s==='S4'?10:8}" fill="${bad?'var(--card)':c}" stroke="${bad?c:s==='S4'?'var(--fg)':'#fff'}" stroke-width="${bad?2.5:s==='S4'?2.5:1.5}"/><text x="${X(fx(s))}" y="${Y(fy(s))+3.5}" text-anchor="middle" font-size="9.5" font-weight="700" fill="${bad?c:'#fff'}">${s}</text><title>${s} ${SNAME[s]}: ${fmt(fx(s),xs==='veh'?0:1)} ${xs==='veh'?'kendaraan-hari':'km'}, lateness ${y} ${fmt(fy(s),1)} menit${bad?'; '+bad+' rute melanggar volume':''}</title></g>`}).join('');
+ $('to1').innerHTML=`<h3>Peta trade-off S0 sampai S4 <span>63 tanggal, tolok ukur bersama</span></h3><div class="sim" style="margin:0 0 6px"><div class="seg" id="toy">${['p50','p85','p95'].map(k=>`<button data-y="${k}" class="${k===y?'on':''}">Lateness ${k}</button>`).join('')}</div><div class="seg" id="tox"><button data-x="veh" class="${xs==='veh'?'on':''}">Kendaraan-hari</button><button data-x="dist" class="${xs==='dist'?'on':''}">Jarak</button></div></div>
+ <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">${g}${fr}${pts}</svg>
+ <div class="note">Garis putus-putus menghubungkan skenario yang tidak didominasi (${par.map(s=>s).join(', ')}) di antara skenario yang tidak melanggar volume. Lingkaran kosong = skenario yang melanggar kapasitas volume (S0: ${U.S0.vviol} rute), sehingga tidak dimasukkan ke garis. Titik di kiri bawah lebih baik pada kedua sumbu; tidak ada skenario yang berada di sana.</div>`;
+ const R=[['Kendaraan-hari',s=>A.own[s].veh,1,0],['Total jarak (km)',s=>A.own[s].dist,1,0],['Lateness p50',s=>A.p50[s].late,1,1],['Lateness p85',s=>A.p85[s].late,1,1],['Lateness p95',s=>A.p95[s].late,1,1],['OTD p50 (%)',s=>A.p50[s].otd,-1,2],['OTD p85 (%)',s=>A.p85[s].otd,-1,2],['OTD p95 (%)',s=>A.p95[s].otd,-1,2],['Rute melanggar volume',s=>U[s].vviol,1,0]];
+ const body=R.map(([n,f,sg,d])=>{const v=SCN.map(s=>sg*f(s)),u=[...new Set(v)].sort((a,b)=>a-b);return`<tr><td style="text-align:left">${n}</td>${SCN.map((s,j)=>{const rk=u.indexOf(v[j])+1;return`<td style="background:rgba(36,88,196,${.34-(rk-1)*.07});${s==='S4'?'box-shadow:inset 0 0 0 1.5px var(--fg);':''}"><b>${rk}</b> <span style="color:var(--mut)">${fmt(f(s),d)}</span></td>`}).join('')}</tr>`}).join('');
+ $('to2').innerHTML=`<h3>Peringkat per metrik <span>1 = terbaik, seri berbagi peringkat</span></h3><table><tr><th style="text-align:left">Metrik</th>${SCN.map(s=>`<th style="${s==='S4'?'color:var(--fg)':''}">${s}</th>`).join('')}</tr>${body}</table>
+ <div class="note"><b>Cara membaca.</b> Tidak ada skenario yang unggul pada semua metrik. S4 memakai kendaraan-hari lebih sedikit daripada S1, S2, dan S3 tanpa melanggar kapasitas volume, tetapi lateness tolok ukur p85 dan p95 lebih tinggi daripada S1, S2, dan S3. S3 terendah pada lateness dengan kendaraan-hari terbanyak. S4 adalah titik kompromi, bukan skenario terbaik; selisih S4 terhadap S0 dan S1 tidak signifikan secara statistik setelah koreksi Holm (Bab IV).</div>`;
+ document.querySelectorAll('#toy button').forEach(b=>b.onclick=()=>{TO.y=b.dataset.y;tradeoff()});document.querySelectorAll('#tox button').forEach(b=>b.onclick=()=>{TO.x=b.dataset.x;tradeoff()})}
+function stressCard(){const A=D.meta.agg,Y=['p50','p85','p95'],el=$('to4');
+ const W=520,H=300,l=52,r=40,t=14,bt=34,vals=SCN.flatMap(s=>Y.map(y=>A[y][s].otd)),lo=Math.floor(Math.min(...vals)/5)*5,X=i=>l+i*(W-l-r)/2,V=v=>t+(1-(v-lo)/(100-lo))*(H-t-bt);
+ let g='';for(let k=0;k<=4;k++){const v=lo+(100-lo)*k/4;g+=`<line x1="${l}" x2="${W-r}" y1="${V(v)}" y2="${V(v)}" stroke="var(--bd)"/><text x="${l-6}" y="${V(v)+4}" text-anchor="end" font-size="11" fill="var(--mut)">${fmt(v,0)}</text>`}
+ Y.forEach((y,i)=>g+=`<text x="${X(i)}" y="${H-10}" text-anchor="middle" font-size="12" fill="var(--mut)">${y}</text>`);
+ const ln=SCN.map(s=>`<polyline fill="none" stroke="${SCOL[s]}" stroke-width="${s==='S4'?3:1.8}" points="${Y.map((y,i)=>X(i)+','+V(A[y][s].otd)).join(' ')}"/>${Y.map((y,i)=>`<circle cx="${X(i)}" cy="${V(A[y][s].otd)}" r="${s==='S4'?5:3.5}" fill="${SCOL[s]}"><title>${s} ${y}: OTD ${fmt(A[y][s].otd,2)}%</title></circle>`).join('')}<text x="${X(2)+8}" y="${V(A.p95[s].otd)+4}" font-size="11" font-weight="700" fill="${SCOL[s]}">${s}</text>`).join('');
+ const gp=y=>A[y].S3.otd-A[y].S4.otd,gl=y=>A[y].S4.late-A[y].S3.late;
+ el.innerHTML=`<h3>Kondisi normal dan kondisi stres <span>OTD pada tolok ukur bersama p50, p85, p95</span></h3><div class="grid" style="grid-template-columns:1.3fr 1fr"><div><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">${g}${ln}</svg><div class="note" style="margin-top:0">Sumbu tegak: OTD (%). Semua skenario menurun dari p50 ke p95; penurunan S4, S1, dan S0 lebih tajam daripada S3 dan S2.</div></div>
+ <div><table><tr><th style="text-align:left">Selisih S3 terhadap S4</th>${Y.map(y=>`<th>${y}</th>`).join('')}</tr><tr><td style="text-align:left">OTD (poin persentase)</td>${Y.map(y=>`<td>${fmt(gp(y),2)}</td>`).join('')}</tr><tr><td style="text-align:left">Lateness S4 dikurangi S3 (menit)</td>${Y.map(y=>`<td>${fmt(gl(y),1)}</td>`).join('')}</tr><tr><td style="text-align:left">Kendaraan-hari ekstra S3 (S3 &minus; S4)</td>${Y.map(()=>`<td>${A.own.S3.veh-A.own.S4.veh}</td>`).join('')}</tr></table>
+ <div class="note"><b>Cara membaca.</b> Pada waktu tempuh median, S4 hampir setara S3 (selisih OTD ${fmt(gp('p50'),2)} poin). Selisih melebar pada kondisi lambat (${fmt(gp('p85'),2)} poin pada p85 dan ${fmt(gp('p95'),2)} poin pada p95). Ketahanan tambahan S3 dibayar dengan ${A.own.S3.veh-A.own.S4.veh} kendaraan-hari ekstra. Seberapa sering kondisi lambat terjadi di lapangan tidak diukur pada penelitian ini; pembacaan ini deskriptif dan tidak menyatakan S4 lebih baik.</div></div></div>`}
+function utilCard(){const U=D.meta.util,el=$('to3');if(!U){el.hidden=true;return}
+ const C=['#c9d8f5','#9db9ea','#6f98dd','#2458c4','#c13a2c'],NM=['&lt; 25%','25 sampai &lt; 50%','50 sampai &lt; 75%','75 sampai 100%','&gt; 100% (melanggar)'];
+ const bar=SCN.map(s=>`<div class="wr"><span style="color:${SCOL[s]}">&#9632; ${s}</span><div class="wb" style="height:18px;display:flex">${U[s].b.map((x,i)=>`<i style="width:${x}%;background:${C[i]}" title="${NM[i].replace(/&lt;/g,'<').replace(/&gt;/g,'>')}: ${fmt(x,1)}% rute"></i>`).join('')}</div></div>`).join('');
+ const lg='<div class="leg">'+NM.map((n,i)=>`<span><i style="background:${C[i]}"></i>${n}</span>`).join('')+'</div>';
+ const row=(l,f)=>`<tr><td style="text-align:left">${l}</td>${SCN.map(s=>`<td${s==='S4'?' style="font-weight:700"':''}>${f(s)}</td>`).join('')}</tr>`;
+ el.innerHTML=`<h3>Utilisasi muatan per rute <span>rute terbaik tiap tanggal, seluruh ${U.S4.n} rute-hari S4 dan pembanding</span></h3><div class="grid" style="grid-template-columns:1fr 1fr"><div><div class="note" style="margin:0 0 6px">Sebaran rute menurut utilisasi volume kendaraan</div>${bar}${lg}</div>
+ <div><table><tr><th style="text-align:left">Ukuran</th>${SCN.map(s=>`<th>${s}</th>`).join('')}</tr>${row('Kendaraan-hari',s=>U[s].n)}${row('Utilisasi volume, rata-rata per rute (%)',s=>fmt(U[s].vu,1))}${row('Utilisasi volume, median (%)',s=>fmt(U[s].vmed,1))}${row('Utilisasi berat, rata-rata per rute (%)',s=>fmt(U[s].wu,1))}${row('Ruang volume kosong (setara kendaraan-hari)',s=>fmt(U[s].idle,1))}${row('Rute dengan utilisasi volume &lt; 25% (%)',s=>fmt(U[s].b[0],1))}</table></div></div>
+ <div class="note">Utilisasi rendah pada semua skenario: sekitar separuh rute memakai kurang dari seperempat volume dan berat rata-rata hanya sekitar 5 sampai 6%. Artinya jumlah kendaraan ditentukan terutama oleh time window dan durasi rute, bukan kapasitas. S4 lebih tinggi daripada S2 dan S3 (terendah, 31,3%) karena S3 memakai kendaraan terbanyak, tetapi hampir sama dengan S1 (35,9% terhadap 35,6%). S0 tertinggi namun melanggar kapasitas volume pada ${D.meta.audit.S0.vviol} rute. Ruang kosong dihitung sebagai jumlah (100% dikurangi utilisasi, dibatasi 100%) dibagi 100. Tidak ada biaya yang dihitung; angka ini hanya menunjukkan kapasitas yang tidak terpakai.</div>`}
+/* ---------- per tanggal ---------- */
+const DM={late:['Lateness sendiri (menit)',m=>m.late,1,0],otd:['OTD sendiri (%)',m=>100*m.otd/100,2,1],dist:['Jarak (km)',m=>m.dist,1,0],veh:['Kendaraan',m=>m.veh,0,0],l85:['Lateness tolok ukur p85 (menit)',m=>m.y.p85[0],1,0],l95:['Lateness tolok ukur p95 (menit)',m=>m.y.p95[0],1,0],o85:['OTD tolok ukur p85 (%)',m=>100*m.y.p85[1]/m.y.p85[2],2,1],o95:['OTD tolok ukur p95 (%)',m=>100*m.y.p95[1]/m.y.p95[2],2,1]};
+let DS={k:'late',col:'day',dir:1,q:'',sc:'all'};
+const nice=v=>{const p=Math.pow(10,Math.floor(Math.log10(v||1)));return([1,1.2,1.5,2,2.5,3,4,5,6,8,10].map(m=>m*p).find(x=>x>=v*1.04)||p*10)};
+function viewDate(){const el=$('v-date'),dm=DM[DS.k],ids=Object.keys(D.days),hi=!!dm[3],EPS=1e-9;
+ const all=ids.map(id=>{const d=D.days[id];return{id,date:d.date,n:d.nodes.length,v:SCN.map(s=>dm[1](d.scen[s].m))}});
+ const bestOf=v=>hi?Math.max(...v):Math.min(...v),wins=SCN.map((s,j)=>all.filter(r=>Math.abs(r.v[j]-bestOf(r.v))<EPS).length);
+ const med=a=>{const x=[...a].sort((p,q)=>p-q),m=x.length>>1;return x.length%2?x[m]:(x[m-1]+x[m])/2};
+ const st=SCN.map((s,j)=>{const v=all.map(r=>r.v[j]);return{mean:mean(v),med:med(v),mx:Math.max(...v),mn:Math.min(...v)}});
+ let rows=all.filter(r=>!DS.q||(r.id+r.date).toLowerCase().includes(DS.q.toLowerCase()));
+ const key=r=>DS.col==='day'?r.id:DS.col==='n'?r.n:r.v[DS.col];rows.sort((x,y)=>{const u=key(x),w=key(y);return(u<w?-1:u>w?1:0)*DS.dir});
+ const AM={late:['own','late'],dist:['own','dist'],veh:['own','veh'],otd:['own','otd'],l85:['p85','late'],l95:['p95','late'],o85:['p85','otd'],o95:['p95','otd']},sumRow=SCN.map(s=>fmt(D.meta.agg[AM[DS.k][0]][s][AM[DS.k][1]],dm[2]));
+ const chips=Object.keys(DM).map(k=>`<button data-k="${k}" class="${k===DS.k?'on':''}">${DM[k][0].replace(' (menit)','').replace(' (%)','').replace(' (km)','')}</button>`).join('');
+ /* tren */
+ const W=760,H=230,l=48,r=10,t=12,bt=26,vals=all.flatMap(x=>x.v),vmin=hi?Math.floor(Math.min(...vals)/5)*5:0,vmax=hi?100:nice(Math.max(...vals)),X=i=>l+i*(W-l-r)/(all.length-1),Y=v=>t+(1-(v-vmin)/(vmax-vmin||1))*(H-t-bt);
+ let g='';for(let i=0;i<=4;i++){const v=vmin+(vmax-vmin)*i/4;g+=`<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--bd)"/><text x="${l-6}" y="${Y(v)+4}" text-anchor="end" font-size="10" fill="var(--mut)">${fmt(v,dm[2]>1?1:0)}</text>`}
+ for(let i=0;i<all.length;i+=7)g+=`<text x="${X(i)}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--mut)">${all[i].id.replace('INSTANCE_0','')}</text>`;
+ const lines=SCN.map((s,j)=>`<polyline fill="none" stroke="${SCOL[s]}" stroke-width="${s==='S4'?2.4:1.4}" stroke-linejoin="round" opacity="${DS.sc==='all'||DS.sc===s?.95:.12}" points="${all.map((x,i)=>X(i)+','+Y(x.v[j])).join(' ')}"/>`).join('');
+ const trend=`<svg id="dsv" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;cursor:crosshair">${g}${lines}<line id="dcx" y1="${t}" y2="${H-bt}" stroke="var(--fg)" opacity=".35" style="display:none"/></svg><div id="dro" class="note" style="margin-top:4px;min-height:18px">Arahkan kursor ke grafik untuk membaca nilai per hari.</div>`;
+ const wbar=SCN.map((s,j)=>`<div class="wr"><span style="color:${SCOL[s]}">&#9632; ${s}</span><div class="wb"><i style="width:${100*wins[j]/all.length}%;background:${SCOL[s]}"></i></div><b>${wins[j]}</b></div>`).join('');
+ const stt=`<table><tr><th style="text-align:left">Skenario</th><th>Rata-rata</th><th>Median</th><th>Min</th><th>Maks</th></tr>${SCN.map((s,j)=>`<tr><td style="text-align:left"><span style="color:${SCOL[s]}">&#9632;</span> ${s}</td><td>${fmt(st[j].mean,dm[2])}</td><td>${fmt(st[j].med,dm[2])}</td><td>${fmt(st[j].mn,dm[2])}</td><td>${fmt(st[j].mx,dm[2])}</td></tr>`).join('')}</table>`;
+ const th=(c,lb)=>`<th data-c="${c}" style="cursor:pointer;position:sticky;top:0;background:var(--card);${c==='day'?'text-align:left':''}">${lb}${DS.col===c?(DS.dir>0?' &#9650;':' &#9660;'):''}</th>`;
+ const cell=(x,r)=>{const b=bestOf(r.v),better=new Set(r.v.filter(y=>hi?y>x+EPS:y<x-EPS).map(y=>y.toFixed(6))).size,isb=Math.abs(x-b)<EPS;return`<td style="${isb?'font-weight:800;':''}background:rgba(36,88,196,${isb?.2:Math.max(0,.1-better*.03)})">${fmt(x,dm[2])}</td>`};
+ el.innerHTML=`<div class="card"><h3>Hasil per tanggal <span>${ids.length} hari pengiriman, S0 sampai S4</span></h3><div class="seg" id="dchips" style="flex-wrap:wrap">${chips}</div>
+ <div class="note" style="margin-top:6px"><b>${DM[DS.k][0]}</b>: ${hi?'makin tinggi makin baik':'makin rendah makin baik'}. ${DS.k.startsWith('l')&&DS.k!=='late'||DS.k.startsWith('o')&&DS.k!=='otd'?'Dihitung pada matriks tolok ukur bersama sehingga setara antar skenario.':DS.k==='late'||DS.k==='otd'?'Dihitung pada matriks tiap skenario sehingga tidak setara antar skenario.':''}</div></div>
+ <div class="grid" style="grid-template-columns:1.7fr 1fr;margin-top:14px"><div class="card"><h3>Tren per hari <span>klik legenda untuk menyorot</span></h3>${trend}<div class="leg" id="dleg" style="cursor:pointer">${SCN.map(s=>`<span data-s="${s}" style="${DS.sc!=='all'&&DS.sc!==s?'opacity:.4':''}"><i style="background:${SCOL[s]}"></i>${s}</span>`).join('')}</div></div>
+ <div class="card"><h3>Skenario terbaik per hari <span>jumlah hari, seri dihitung untuk semua yang terbaik</span></h3>${wbar}<div style="height:8px"></div>${stt}</div></div>
+ <div class="card" style="margin-top:14px"><h3>Tabel per tanggal <span>klik judul kolom untuk mengurutkan; warna lebih pekat = lebih baik pada hari itu</span></h3>
+ <div class="sim"><input id="dq" placeholder="Cari hari, mis. 012" value="${DS.q}" style="padding:7px 10px;border:1px solid var(--bd);border-radius:7px;background:var(--soft);color:var(--fg)"><span style="color:var(--mut);font-size:12px">${rows.length} dari ${all.length} hari</span></div>
+ <div style="max-height:520px;overflow:auto"><table><tr>${th('day','Hari')}${th('n','Stop')}${SCN.map((s,j)=>th(j,`<span style="color:${SCOL[s]}">&#9632;</span> ${s}`)).join('')}</tr>
+ ${rows.map(r=>`<tr class="drow" data-d="${r.id}" style="cursor:pointer"><td style="text-align:left">${r.id.replace('INSTANCE_','Hari ')}</td><td>${r.n}</td>${r.v.map(x=>cell(x,r)).join('')}</tr>`).join('')}
+ <tr style="border-top:2px solid var(--bd)"><td style="text-align:left"><b>${DS.k==='otd'||DS.k==='o85'||DS.k==='o95'?'Agregat (berbobot stop)':'Total'} ${ids.length} hari</b></td><td></td>${sumRow.map(x=>`<td><b>${x}</b></td>`).join('')}</tr></table></div>
+ <div class="note">Nilai per hari dibulatkan satu desimal; baris total memakai agregat tepat yang sama dengan Bab IV. Rata-rata per hari dan jumlah hari terbaik bersifat deskriptif dan bukan uji statistik; uji berpasangan per tanggal dengan koreksi Holm ada pada Bab IV. Klik baris untuk membuka hari itu di peta.</div></div>`;
+ el.querySelectorAll('#dchips button').forEach(b=>b.onclick=()=>{DS.k=b.dataset.k;DS.col='day';DS.dir=1;viewDate()});
+ el.querySelectorAll('#dleg span').forEach(x=>x.onclick=()=>{DS.sc=DS.sc===x.dataset.s?'all':x.dataset.s;viewDate()});
+ el.querySelectorAll('th[data-c]').forEach(h=>h.onclick=()=>{const c=h.dataset.c,cc=isNaN(c)?c:Number(c);if(DS.col===cc)DS.dir*=-1;else{DS.col=cc;DS.dir=1}viewDate()});
+ $('dq').oninput=e=>{DS.q=e.target.value;viewDate();const i=$('dq');i.focus();i.setSelectionRange(i.value.length,i.value.length)};
+ el.querySelectorAll('.drow').forEach(r=>r.onclick=()=>{$('day').value=r.dataset.d;tab='route';document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x.dataset.t==='route'));render()});
+ const sv=$('dsv');sv.onmousemove=e=>{const bb=sv.getBoundingClientRect(),px=(e.clientX-bb.left)/bb.width*W,i=Math.max(0,Math.min(all.length-1,Math.round((px-l)/((W-l-r)/(all.length-1)))));const c=$('dcx');c.style.display='block';c.setAttribute('x1',X(i));c.setAttribute('x2',X(i));$('dro').innerHTML=`<b>${all[i].id.replace('INSTANCE_','Hari ')}</b> (${all[i].n} stop): `+SCN.map((s,j)=>`<span style="color:${SCOL[s]}">${s} <b>${fmt(all[i].v[j],dm[2])}</b></span>`).join(' &nbsp; ')};
+ sv.onmouseleave=()=>{$('dcx').style.display='none'}}
+/* ---------- S5 ---------- */
+const mean=a=>a.reduce((s,x)=>s+x,0)/a.length;
+function agg5(){const ci=G.ci,ids=Object.keys(G.inst),o={};for(const m of M){const per=ids.map(i=>G.inst[i][m]);o[m]={lat:mean(per.map(r=>mean(r.map(x=>x[ci.total_lateness_min])))),rsi:mean(per.map(r=>mean(r.map(x=>x[ci.rsi])))),mv:mean(per.map(r=>mean(r.map(x=>x[ci.moved_stops])))),harm:mean(per.map(r=>mean(r.map(x=>x[ci.block_any_harm]))))*100,otd:mean(per.map(r=>mean(r.map(x=>x[ci.otd_num]/x[ci.otd_den]))))*100}}return{o,n:ids.length}}
+function paint(mp,gp,useS5,t){const g0=grp;grp=gp;gp.clearLayers();const d=D.days[$('day').value],N=d.nodes,dep=[D.meta.depot[1],D.meta.depot[0]],ll=n=>[N[n].lat,N[n].lon];
+ const key=`${$('tf').value}|${$('sh').value}|${$('sd').value}`,fz=d.frozen[key]||{},run=(d.runs||{})[key+'|'+$('m').value],s5=useS5&&!!run,AR=(d.t||{})[key+'|'+(s5?$('m').value:'NR')];let all=[],F=0,T=0,MV=0,seq='',TL=[],TOT=0;const mk={};
+ Object.keys(d.route).sort().forEach((v,vi)=>{const c=PAL[vi%PAL.length],a=d.route[v],nf=fz[v]||0;F+=nf;T+=a.length;
+  if(s5)line([dep,...a.map(ll),dep],{color:'#8a8a8a',weight:8,opacity:.3},t);else line([dep,...a.map(ll),dep],{color:c,weight:4,opacity:.9},t);
+  const b=s5?run[v][0]:a,nb=s5?run[v][1]:nf;let cv=0;const p4={};a.slice(nf).forEach((n,i)=>p4[n]=i);
+  if(s5){if(nb)line([dep,...b.slice(0,nb).map(ll)],{color:c,weight:5},t);line([nb?ll(b[nb-1]):dep,...b.slice(nb).map(ll),dep],{color:c,weight:4,dashArray:'1 8',lineCap:'round'},t)}else if(nf)line([dep,...a.slice(0,nf).map(ll)],{color:c,weight:6},t);
+  let tr='';const ar=AR&&AR[v],row={v,c,pts:[],bnd:480};TL.push(row);b.forEach((n,i)=>{all.push(ll(n));const fzn=i<(s5?nb:nf),mv=s5&&!fzn&&p4[n]!==i-nb;if(mv){cv++;MV++}
+  const nd=N[n],arr=ar?ar[i]:null,st=arr==null?null:Math.max(arr,nd.a),lt=arr==null?0:Math.max(0,st-nd.b);if(arr!=null){TOT+=lt;row.pts.push({i,arr,lt,fzn,mv,n,st,dep:st+nd.s});if(fzn)row.bnd=st+nd.s}
+   const m=L.marker(ll(n),{icon:pin(i+1,c,(fzn?'':'h ')+(mv?'m ':'')+(lt>0.05?'late':'')),zIndexOffset:mv?500:0}).bindTooltip(`<b>${i+1}. ${N[n].id}</b><br>${v}, ${fzn?'beku':'belum dilayani'}${mv?', berpindah dari NR':''}<br>${arr==null?'':`tiba ${hm(arr)}, ${lt>0.05?'terlambat '+fmt(lt,1)+' menit':'tepat waktu'}<br>`}jendela ${hm(nd.a)}-${hm(nd.b)}, ${N[n].w} kg`).addTo(gp);mk[v+'|'+i]=m;
+   tr+=`<tr data-k="${v}|${i}"><td>${i+1}</td><td style="text-align:left">${N[n].id}</td><td>${hm(nd.a)}-${hm(nd.b)}</td><td>${arr==null?'-':hm(arr)}</td><td>${arr==null?'-':lt>0.05?`<span class="tag t4">${fmt(lt,1)}</span>`:'<span class="tag t5">0</span>'}</td><td><span class="tag ${fzn?'t1':mv?'t3':'t2'}">${fzn?'beku':mv?'pindah':'sisa'}</span></td></tr>`});
+  seq+=`<div class="vh"><i style="background:${c}"></i>${v}<span style="color:var(--mut);font-weight:400">${a.length} stop, ${nf} beku${s5?', '+cv+' pindah':''}</span></div><table class="seq"><tr><th>#</th><th style="text-align:left">Stop</th><th>Jendela</th><th>Tiba</th><th>Telat (mnt)</th><th>Status</th></tr>${tr}</table>`});
+ L.marker(dep,{icon:depIcon,zIndexOffset:900}).bindTooltip('Depo').addTo(gp);mp.fitBounds(L.latLngBounds([dep,...all]).pad(.12));grp=g0;return{F,T,MV,seq,mk,s5,TL,TOT,has:!!AR}}
+function tlS5(title,sub,R,t0,t1){const pc=v=>((v-t0)/(t1-t0)*100);let tl='';
+ R.TL.forEach(r=>{tl+=`<div class="tr"><div class="n" style="color:${r.c}">${r.v}</div><div class="t">${r.pts.map(p=>`<b style="left:${pc(p.arr)}%;background:${p.lt>0.05?'#c13a2c':r.c};${p.fzn?'':'opacity:.62;'}${p.mv?'box-shadow:0 0 0 2px #111;':''}" title="${p.i+1}. tiba ${hm(p.arr)}${p.lt>0.05?', terlambat '+fmt(p.lt,1)+' menit':''}${p.fzn?' (beku)':p.mv?' (pindah)':''}">${p.i+1}</b>`).join('')}<div class="bnd" style="left:${pc(r.bnd)}%" title="Batas stop beku, ${hm(r.bnd)}"></div><div class="tw" style="left:${pc(1080)}%" title="Target selesai 18:00"></div><div class="cur" style="left:${pc(t0)}%"></div></div></div>`});
+ const ticks=[];for(let h=Math.ceil(t0/60);h*60<=t1;h++)ticks.push(`<span>${String(h).padStart(2,'0')}:00</span>`);
+ return `<div class="tlb"><div class="tlh"><b>${title}</b><span>${sub}</span></div><div class="tl">${tl}</div><div class="axis">${ticks.join('')}</div></div>`}
+let SIMS=null,raf=0;
+function setupSim(Rs,mps,t0,t1,names){cancelAnimationFrame(raf);if(SIMS)SIMS.layers.forEach(l=>l.remove());
+ const d=D.days[$('day').value],N=d.nodes,dep=[D.meta.depot[1],D.meta.depot[0]],ll=n=>[N[n].lat,N[n].lon];
+ const layers=Rs.map((R,k)=>{const g=L.layerGroup().addTo(mps[k]);R.mk2=R.TL.map(r=>L.marker(dep,{icon:L.divIcon({className:'',html:`<div class="veh" style="background:${r.c}">${r.v}</div>`,iconSize:[20,20],iconAnchor:[10,10]}),zIndexOffset:1500}).addTo(g));return g});
+ SIMS={layers,t0,t1,Rs,names,t:t0,play:false,last:0};const ss=$('ss');ss.min=t0;ss.max=t1;ss.step=1;ss.value=t0;
+ const pos=(r,t)=>{let pt=dep,tp=480;for(const p of r.pts){if(t<p.arr){const f=Math.max(0,Math.min(1,(t-tp)/Math.max(1e-6,p.arr-tp))),q=ll(p.n);return[pt[0]+(q[0]-pt[0])*f,pt[1]+(q[1]-pt[1])*f]}
+   if(t<=p.dep)return ll(p.n);pt=ll(p.n);tp=p.dep}return pt};
+ SIMS.draw=t=>{SIMS.t=t;$('sc5').textContent=hm(t);ss.value=t;let kk='';
+  Rs.forEach((R,k)=>{let ser=0,late=0,lt=0,tot=0;R.TL.forEach((r,i)=>{R.mk2[i].setLatLng(pos(r,t));r.pts.forEach(p=>{tot++;if(p.st<=t){ser++;lt+=p.lt;if(p.lt>0.05)late++}})});
+   kk+=`<span><b>${names[k]}</b>: terlayani <b>${ser}/${tot}</b>, terlambat <b>${late}</b> stop, lateness berjalan <b>${fmt(lt,1)}</b> menit</span>`});$('sk').innerHTML=kk;
+  const pc=v=>((v-t0)/(t1-t0)*100);document.querySelectorAll('#tlc5 .cur').forEach(e=>e.style.left=pc(t)+'%')};
+ const step=ts=>{if(!SIMS||!SIMS.play)return;const dt=SIMS.last?(ts-SIMS.last)/1000:0;SIMS.last=ts;let t=SIMS.t+dt*Number($('sv').value);if(t>=SIMS.t1){t=SIMS.t1;SIMS.play=false;$('sp').innerHTML='&#9654; Putar'}SIMS.draw(t);if(SIMS.play)raf=requestAnimationFrame(step)};
+ $('sp').onclick=()=>{if(SIMS.play){SIMS.play=false;$('sp').innerHTML='&#9654; Putar';return}if(SIMS.t>=SIMS.t1)SIMS.t=SIMS.t0;SIMS.play=true;SIMS.last=0;$('sp').innerHTML='&#10074;&#10074; Jeda';raf=requestAnimationFrame(step)};
+ ss.oninput=()=>{SIMS.play=false;$('sp').innerHTML='&#9654; Putar';SIMS.draw(Number(ss.value))};SIMS.draw(t0)}
+function viewS5(){const t=++tok,side=$('view5').value==='2';const d=D.days[$('day').value];
+ const hasRun=!!(d.runs||{})[`${$('tf').value}|${$('sh').value}|${$('sd').value}|${$('m').value}`];
+ $('map2').style.display=side?'block':'none';['ml1','ml2'].forEach(i=>$(i).style.display=side?'block':'none');$('ml1').textContent='NR: tanpa koreksi (rute S4)';$('ml2').textContent='S5: koreksi '+$('m').value;
+ map.invalidateSize();if(side)map2.invalidateSize();
+ const R=side?paint(map,grp,false,t):paint(map,grp,$('l5').value==='1',t);let R2=null;if(side){R2=paint(map2,grp2,true,t);map2.invalidateSize();map2.setView(map.getCenter(),map.getZoom(),{animate:false})}
+ const {F,T,seq}=side?R2:R,MV=(side?R2:R).MV,s5=(side?R2:R).s5,mk=(side?R2:R).mk;
+ {const Rs=side?[R,R2]:[R],has=Rs.every(x=>x.has);let h='';
+  if(!has)h='<div class="note">Berkas rute tidak memuat jam tiba (gunakan routes_v3_anonim.json versi v3.1).</div>';
+  else{const all=Rs.flatMap(x=>x.TL.flatMap(r=>r.pts.map(p=>p.arr)));const t0=Math.min(480,...all)-10,t1=Math.max(1080,...all)+20,m=$('m').value,sh=$('sh').value;
+   const dly={delay20:'jeda 20 menit',delay30:'jeda 30 menit'}[sh],ket=dly?`sisa rute pada p50 dengan ${dly} di batas stop beku`:`sisa rute pada ${sh} (p50 &times; ${sh==='p85'?'1,1559':'1,2935'})`;
+   const sc=side?[[ 'NR: tanpa koreksi',R],['S5: koreksi '+m,R2]]:[[R.s5?'S5: koreksi '+m:'NR: tanpa koreksi',R]];
+   h=sc.map(([a,x])=>tlS5(a,'lateness total '+fmt(x.TOT,1)+' menit',x,t0,t1)).join('')+`<div class="note">Jam tiba disimulasikan ulang dengan aturan simulator IJIES: prefiks beku pada p50 dari depo 08:00, ${ket}. Bulatan terang = belum dilayani, cincin hitam = stop berpindah, merah = terlambat, garis hitam = batas stop beku, garis putus-putus = target 18:00. Total lateness dicocokkan dengan tabel blok IJIES pada 7.344 blok (cocok hingga pembulatan 0,1 menit pada tampilan).</div>`}
+  $('tlc5').innerHTML=`<h3>Linimasa dan simulasi <span>replay pada tingkat Digital Model, bukan real-time</span></h3>`+(has?`<div class="sim"><button id="sp">&#9654; Putar</button><span class="clk" id="sc5">08:00</span><input type="range" id="ss" min="0" max="1" value="0"><select id="sv"><option value="6">6 menit/detik</option><option value="15" selected>15 menit/detik</option><option value="40">40 menit/detik</option></select></div><div class="simk" id="sk"></div>`:'')+h;
+  if(has)setupSim(Rs,side?[map,map2]:[map],Math.min(480,...Rs.flatMap(x=>x.TL.flatMap(r=>r.pts.map(p=>p.arr))))-10,Math.max(1080,...Rs.flatMap(x=>x.TL.flatMap(r=>r.pts.map(p=>p.arr))))+20,side?['NR','S5']:[Rs[0].s5?'S5':'NR'])}
+ let blk='<div class="note">Muat s5_blocks.json untuk menampilkan hasil S5.</div>',ag='';
+ if(B){const ci=G.ci,I=G.inst[$('day').value];
+  blk=!I?'<div class="note">Instance kalibrasi: tidak termasuk dalam hasil held-out.</div>':'<table><tr><th>Metode</th><th>Lateness</th><th>OTD %</th><th>RSI</th><th>Pindah</th><th>Merugikan?</th></tr>'+M.map(m=>{const r=I[m].find(x=>String(x[ci.trigger_fraction])===$('tf').value&&x[ci.shock]===$('sh').value&&String(x[ci.seed])===$('sd').value);return r?`<tr class="${m===$('m').value?'hl':''}"><td>${m}</td><td>${fmt(r[ci.total_lateness_min],1)}</td><td>${fmt(100*r[ci.otd_num]/r[ci.otd_den],1)}</td><td>${fmt(r[ci.rsi],3)}</td><td>${r[ci.moved_stops]}</td><td><span class="tag ${r[ci.block_any_harm]?'t4':'t5'}">${r[ci.block_any_harm]?'ya':'tidak'}</span></td></tr>`:''}).join('')+'</table>';
+  const ci2=G.ci,nr=new Map();B.rows.forEach(r=>{if(r[ci2.method]==='NR')nr.set(r[0]+'|'+r[1]+'|'+r[2]+'|'+r[3],r[ci2.total_lateness_min])});
+  const dist=['FR','RG','SA'].map(m=>{let b=0,e=0,w=0,h=0,n=0;B.rows.forEach(r=>{if(r[ci2.method]!==m)return;const x=nr.get(r[0]+'|'+r[1]+'|'+r[2]+'|'+r[3]);if(x==null)return;n++;const df=r[ci2.total_lateness_min]-x;if(df<-1e-6)b++;else if(df>1e-6)w++;else e++;h+=r[ci2.block_any_harm]});return`<tr><td>${m}</td><td>${n}</td><td>${b} (${fmt(100*b/n,1)}%)</td><td>${e} (${fmt(100*e/n,1)}%)</td><td>${w}</td><td>${h}</td></tr>`}).join('');
+  const A=agg5(),o=A.o;ag=`<table><tr><th>Metode</th><th>Lateness</th><th>OTD %</th><th>RSI</th><th>Pindah</th><th>Blok rugi %</th></tr>`+M.map(m=>`<tr><td>${m}</td><td>${fmt(o[m].lat)}</td><td>${fmt(o[m].otd)}</td><td>${fmt(o[m].rsi,3)}</td><td>${fmt(o[m].mv)}</td><td>${fmt(o[m].harm,1)}</td></tr>`).join('')+`</table><h3 style="margin-top:14px">Sebaran per blok <span>dibanding NR, lateness</span></h3><table><tr><th>Metode</th><th>Blok</th><th>Membaik</th><th>Sama</th><th>Memburuk</th><th>Blok rugi</th></tr>${dist}</table><div class="note">Satu blok = satu kombinasi instance, pemicu, gangguan, dan seed. "Sama" berarti selisih lateness terhadap NR nol (di bawah 1e-6 menit). Rata-rata per instance lalu antar ${A.n} instance held-out. SA terhadap NR: ${fmt(o.SA.lat-o.NR.lat)} menit. Pindah SA terhadap RG: ${fmt((o.SA.mv/o.RG.mv-1)*100,1)}%.</div>`}
+ let dl='';if(side&&B&&G.inst[$('day').value]){const ci=G.ci,I=G.inst[$('day').value],f=m=>I[m].find(x=>String(x[ci.trigger_fraction])===$('tf').value&&x[ci.shock]===$('sh').value&&String(x[ci.seed])===$('sd').value),a=f('NR'),b=f($('m').value);
+  if(a&&b){const dL=b[ci.total_lateness_min]-a[ci.total_lateness_min],dO=100*b[ci.otd_num]/b[ci.otd_den]-100*a[ci.otd_num]/a[ci.otd_den];dl=`<div class="card"><h3>Selisih ${$('m').value} terhadap NR <span>blok terpilih</span></h3><div class="dlt"><div><b class="${dL<0?'dn':dL>0?'up':''}">${dL>0?'+':''}${fmt(dL,1)}</b><span>lateness (menit)</span></div><div><b class="${dO>0?'dn':dO<0?'up':''}">${dO>0?'+':''}${fmt(dO,1)}</b><span>OTD (pp)</span></div><div><b>${fmt(b[ci.rsi],3)}</b><span>RSI</span></div><div><b>${b[ci.moved_stops]}</b><span>stop pindah</span></div></div><div class="note">NR ${fmt(a[ci.total_lateness_min],1)} menit &rarr; ${$('m').value} ${fmt(b[ci.total_lateness_min],1)} menit. Satu blok bukan bukti umum; lihat agregat 51 instance di bawah.</div></div>`}}
+ $('scol').innerHTML=dl+`<div class="grid" style="grid-template-columns:repeat(4,1fr)"><div class="card kpi"><div class="l">Stop</div><b>${T}</b></div><div class="card kpi"><div class="l">Beku</div><b>${F}</b></div><div class="card kpi"><div class="l">Sisa</div><b>${T-F}</b></div><div class="card kpi"><div class="l">Pindah</div><b>${s5?MV:'-'}</b></div></div>
+ <div class="card"><h3>Legenda</h3><div class="s5l"><span class="l"><i style="border-top-width:8px;border-color:#bbb"></i>NR</span><span class="l"><i></i>prefiks beku</span><span class="l"><i style="border-top-style:dotted"></i>sisa rute S5</span></div><div class="note">Rute NR identik dengan rute S4. Hasil S5 adalah perbandingan NR dengan FR, RG, dan SA pada rute S4; S5 tidak dijalankan pada S2 dan S3, sehingga tampilan ini tidak membandingkan S4 dengan S5 terhadap S2 atau S3. ${d.runs&&Object.keys(d.runs).length?'':'Instance kalibrasi: tidak ada rute S5.'}</div></div>
+ <div class="card"><h3>Hasil S5 pada blok terpilih</h3>${blk}<div class="note">NR = tanpa penyusunan ulang; FR/RG/SA = metode koreksi S5. Sumber: keluaran blok IJIES.</div></div>
+ <div class="card"><h3>Agregat S5 <span>instance held-out</span></h3>${ag||'<div class="note">Muat s5_blocks.json.</div>'}</div>
+ <div class="card"><h3>Urutan kunjungan</h3>${seq}</div>`;
+ document.querySelectorAll('#scol tr[data-k]').forEach(r=>r.onclick=()=>{const m=mk[r.dataset.k];map.flyTo(m.getLatLng(),Math.max(map.getZoom(),15));m.openTooltip()})}
+</script></body></html>
