@@ -1,0 +1,15 @@
+# Data operasional konfidensial: jangan pernah dikomit
+*.xlsx
+*.xls
+data/
+inputs/
+**/customer_day_stops*.csv
+**/routes_v2.json
+**/combined_*matrix*.csv
+**/saved_matrix*/
+# Keluaran eksekusi
+run/
+ck_all/
+*.log
+__pycache__/
+.ipynb_checkpoints/
